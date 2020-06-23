@@ -28,7 +28,7 @@ from django.views.generic import DetailView, FormView, ListView, TemplateView, V
 from reversion import revisions
 
 from judge.forms import CustomAuthenticationForm, DownloadDataForm, ProfileForm, newsletter_id
-from judge.models import Profile, Rating, Submission
+from judge.models import Comment, Profile, Rating, Submission
 from judge.performance_points import get_pp_breakdown
 from judge.ratings import rating_class, rating_progress
 from judge.tasks import prepare_user_data
@@ -41,7 +41,7 @@ from judge.utils.unicode import utf8text
 from judge.utils.views import DiggPaginatorMixin, QueryStringSortMixin, TitleMixin, add_file_response, generic_message
 from .contests import ContestRanking
 
-__all__ = ['UserPage', 'UserAboutPage', 'UserProblemsPage', 'UserDownloadData', 'UserPrepareData',
+__all__ = ['UserPage', 'UserAboutPage', 'UserCommentsPage', 'UserProblemsPage', 'UserDownloadData', 'UserPrepareData',
            'users', 'edit_profile']
 
 
@@ -182,6 +182,20 @@ class UserAboutPage(UserPage):
             ratio = (max_ever - max_user) / (max_ever - min_ever) if max_ever != min_ever else 1.0
             context['max_graph'] = max_user + ratio * delta
             context['min_graph'] = min_user + ratio * delta - delta
+        return context
+
+
+class UserCommentsPage(UserPage):
+    template_name = 'user/user-comments.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UserCommentsPage, self).get_context_data(**kwargs)
+        # author, author_id, body, hidden, id, level, lft, page, parent, parent_id, replies, rght, score, time, tree_id, versions, votes
+        comments = Comment.objects.filter(author=self.object, hidden=False) \
+            .values('author', 'time', 'page', 'score', 'body')
+
+        context['comment_history'] = comments
+
         return context
 
 
