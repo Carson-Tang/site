@@ -21,7 +21,7 @@ from django.views.generic import DetailView, ListView
 
 from judge import event_poster as event
 from judge.highlight_code import highlight_code
-from judge.models import Contest, Language, Problem, ProblemTranslation, Profile, Submission
+from judge.models import Contest, Language, Organization, Problem, ProblemTranslation, Profile, Submission
 from judge.utils.infinite_paginator import InfinitePaginationMixin
 from judge.utils.problems import get_result_data, user_completed_ids, user_editable_ids, user_tester_ids
 from judge.utils.raw_sql import join_sql_subquery, use_straight_join
@@ -242,6 +242,9 @@ class SubmissionsListBase(DiggPaginatorMixin, TitleMixin, ListView):
             queryset = queryset.filter(language__in=Language.objects.filter(key__in=self.selected_languages))
         if self.selected_statuses:
             queryset = queryset.filter(result__in=self.selected_statuses)
+        if self.selected_organizations:
+            # idk
+            queryset = queryset.filter()
 
         return queryset
 
@@ -285,6 +288,9 @@ class SubmissionsListBase(DiggPaginatorMixin, TitleMixin, ListView):
         context['all_statuses'] = self.get_searchable_status_codes()
         context['selected_statuses'] = self.selected_statuses
 
+        context['all_organizations'] = 
+        context['selected_organizations'] = self.selected_organizations
+
         context['results_json'] = mark_safe(json.dumps(self.get_result_data()))
         context['results_colors_json'] = mark_safe(json.dumps(settings.DMOJ_STATS_SUBMISSION_RESULT_COLORS))
 
@@ -302,6 +308,7 @@ class SubmissionsListBase(DiggPaginatorMixin, TitleMixin, ListView):
 
         self.selected_languages = set(request.GET.getlist('language'))
         self.selected_statuses = set(request.GET.getlist('status'))
+        self.selected_organizations = set(request.GET.getlist('organization'))
 
         if 'results' in request.GET:
             return JsonResponse(self.get_result_data())
@@ -491,7 +498,7 @@ class AllSubmissions(InfinitePaginationMixin, SubmissionsListBase):
         return context
 
     def _get_result_data(self):
-        if self.in_contest or self.selected_languages or self.selected_statuses:
+        if self.in_contest or self.selected_languages or self.selected_statuses or self.selected_organizations: # is this needed
             return super(AllSubmissions, self)._get_result_data()
 
         key = 'global_submission_result_data'

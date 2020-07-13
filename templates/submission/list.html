@@ -327,6 +327,15 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <div class="filter-form-group">
+                                <label for="organization"><i>{{ _('Organization') }}</i></label>
+                                <select id="organization" name="organization" multiple>
+                                    {% for org, name in all_organizations %}
+                                        <option {% if org in selected_organizations %}selected{% endif %}
+                                                value="{{ org }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>  
                             <div class="form-submit-group">
                                 <a id="go" onclick="form.submit()" class="button">{{ _('Go') }}</a>
                             </div>
